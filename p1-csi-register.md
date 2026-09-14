@@ -26,3 +26,7 @@
 ## 3. Principe directeur mobilisé
 
 **« Progresser de manière itérative avec du feedback »** — chaque amélioration est un incrément testable avant d'investir dans la suivante, plutôt qu'une refonte globale risquée et difficile à diagnostiquer en cas d'échec.
+
+
+---
+*Diagnostic validé après relecture des symptômes rapportés par les utilisateurs.*
