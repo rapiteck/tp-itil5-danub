@@ -1,0 +1,26 @@
+# TP ITIL/GLPI — "Une journée chez NORTEK SI"
+## Document récapitulatif final
+
+## Phase 1 — Gestion des incidents
+
+Les 5 tickets ont été créés et catégorisés (4 Incidents, 1 Demande pour la souris, requalifiée car il s'agit d'un remplacement de matériel et non d'une panne bloquante). La priorisation a été déduite de la matrice Impact/Urgence : le serveur mail (impact fort, urgence forte) et l'email de phishing (même combinaison) ressortent en priorité "Très haute", suivis du dashboard DAF (priorité "Moyenne", justifiée par son statut VIP malgré un impact individuel), puis l'imprimante et la souris en priorité basse (impact et urgence faibles, contournement disponible). Le traitement effectif a suivi l'ordre 1 (mail) → 2 (phishing) → 3 (DAF) → 4 (imprimante) → 5 (souris), le mail passant devant le phishing malgré une priorité GLPI identique car il bloque l'intégralité de l'entreprise sans aucun contournement, alors que le phishing reste un risque individuel contenable. Le ticket n°3 a été qualifié comme incident de sécurité (catégorie dédiée "Sécurité > Phishing") et non comme un incident technique classique, car il s'agit d'un signalement à risque de compromission, nécessitant confinement et sensibilisation plutôt qu'une réparation matérielle.
+
+## Phase 2 — Gestion des problèmes
+
+Un Problème "Instabilité récurrente du serveur de messagerie" a été créé et lié aux 3 incidents concernés (les 2 antériorités historiques recréées avec dates rétroactives, plus l'incident du jour). La méthode des 5 pourquoi a permis de remonter d'un symptôme de surface (lenteur puis coupure) jusqu'à une cause racine organisationnelle : une fuite mémoire du service de messagerie, non détectée faute de supervision proactive, elle-même absente faute de procédure formalisée d'ajout des nouveaux serveurs critiques au périmètre de supervision. En attendant le correctif définitif, un workaround a été mis en place (redémarrage préventif planifié toutes les 72h), documenté à la fois dans la fiche Problème et dans un article de la base de connaissances (KEDB), pour qu'un autre technicien puisse traiter un cas similaire sans réinvestiguer depuis zéro.
+
+## Phase 3 — Gestion des changements
+
+La cause racine a été transformée en RFC-2026-002, classée en changement **Normal** (ni standard, car jamais déployé auparavant, ni urgent, car le workaround limite suffisamment l'impact pour permettre une évaluation normale). La RFC documente une analyse d'impact concrète (200 utilisateurs, interruption estimée à 30 minutes) et un plan de rollback chiffré (restauration d'un snapshot pré-changement, délai de 20 minutes). La validation CAB a été simulée avec un argumentaire côté demandeur (bénéfice : traiter la cause racine plutôt que le symptôme) et côté approbateur (conditions posées : snapshot immédiat avant intervention, astreinte technicien pendant la fenêtre), aboutissant à une approbation conditionnelle. Le changement a été créé dans GLPI et lié au Problème ainsi qu'aux 3 tickets incidents de la phase 1/2, assurant la traçabilité complète de la chaîne symptôme → cause → changement.
+
+## Phase 4 — Gestion des configurations (CMDB)
+
+La fiche CI `SRV-MAIL01` a été créée dans GLPI, avec deux CI dépendants documentés (`AD-SRV01` pour l'annuaire d'authentification, `BACKUP-SRV01` pour la sauvegarde nocturne des boîtes mail), reliés via l'outil d'analyse d'impact natif de GLPI. La simulation d'impact d'une panne montre qu'une indisponibilité de `SRV-MAIL01` bloque l'intégralité des 200 utilisateurs sans contournement interne possible, avec un risque secondaire sur `BACKUP-SRV01` si la panne survient pendant la fenêtre de sauvegarde nocturne (sauvegarde incomplète ce jour-là). Cette vision d'impact, établie avant l'intervention du changement de la phase 3, confirme la nécessité d'une fenêtre de maintenance hors heures ouvrées et d'un plan de rollback réactif, cohérents avec ce qui a été proposé dans la RFC.
+
+## Phase 5 — Gestion des demandes de service
+
+La demande d'onboarding de Julie a été créée en tant que **Demande de service**, explicitement distincte d'un Incident : il s'agit d'une action planifiée à échéance connue (arrivée lundi prochain), non d'une panne. Le catalogue de services fictif a été décliné en 4 éléments à traiter (compte + boîte mail, poste + périphériques, accès VPN, accès au dossier partagé "Communication"), avec un SLA de demande de service distinct du SLA incident, fixant une date cible de mise à disposition 3 jours ouvrés avant l'arrivée pour garantir un poste opérationnel dès le jour J.
+
+## Cohérence du fil rouge
+
+L'ensemble des 5 phases forme une chaîne traçable dans GLPI : les 3 incidents de messagerie (Phase 1 + historique) sont liés au Problème (Phase 2), lui-même lié au changement RFC-2026-002 (Phase 3), qui s'appuie sur la fiche CI `SRV-MAIL01` et ses dépendances documentées en Phase 4. La Phase 5 reste un fil indépendant (aucune dépendance technique avec la messagerie), traitée en parallèle comme le prévoit l'énoncé, illustrant qu'une DSI de 4 personnes doit mener plusieurs pratiques ITIL de front sans perdre la traçabilité de chacune.
